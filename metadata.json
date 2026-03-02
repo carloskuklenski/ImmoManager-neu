@@ -1,0 +1,5 @@
+{
+  "name": "ImmoManager",
+  "description": "Verwaltung von Immobilien, Wohnungen und Mietern.",
+  "requestFramePermissions": []
+}
