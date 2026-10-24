@@ -13,6 +13,7 @@ import { YieldCalculator } from './components/YieldCalculator';
 import { RentIncreases } from './components/RentIncreases';
 import { Portfolio } from './components/Portfolio';
 import { Operations } from './components/Operations';
+import { Documents } from './components/Documents';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -27,6 +28,7 @@ export default function App() {
         {activeTab === 'calculator' && <YieldCalculator />}
         {activeTab === 'portfolio' && <Portfolio />}
         {activeTab === 'operations' && <Operations />}
+        {activeTab === 'documents' && <Documents />}
     </Layout>
   );
 }
