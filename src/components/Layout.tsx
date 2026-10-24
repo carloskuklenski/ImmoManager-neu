@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, Building, Users, Menu, X, PieChart, FileSpreadsheet, Calculator, TrendingUp, Share2, LogIn, LogOut, User as UserIcon } from 'lucide-react';
+import { Home, Building, Users, Menu, X, PieChart, FileSpreadsheet, Calculator, TrendingUp, Share2, LogIn, LogOut, User as UserIcon, ClipboardList } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 
 interface LayoutProps {
@@ -20,6 +20,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
     { id: 'rent-increases', label: 'Mieterhöhungen', icon: TrendingUp },
     { id: 'calculator', label: 'Renditerechner', icon: Calculator },
     { id: 'portfolio', label: 'Portfolio & Sharing', icon: Share2 },
+    { id: 'operations', label: 'Vorgänge & Aufgaben', icon: ClipboardList },
   ];
 
   if (isLoading) {
