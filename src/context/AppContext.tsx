@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Property, Unit, Tenant, Document, UtilitySettlement, YieldCalculation, RentIncrease, User, Portfolio } from '../types';
+import { Property, Unit, Tenant, Document, UtilitySettlement, YieldCalculation, RentIncrease, User, Portfolio, WorkItem } from '../types';
 
 interface AppState {
   properties: Property[];
@@ -9,6 +9,7 @@ interface AppState {
   settlements: UtilitySettlement[];
   calculations: YieldCalculation[];
   rentIncreases: RentIncrease[];
+  operations: WorkItem[];
 }
 
 interface AppContextType extends AppState {
@@ -18,6 +19,7 @@ interface AppContextType extends AppState {
   isLoading: boolean;
   
   login: () => Promise<void>;
+  startDemo: () => void;
   logout: () => Promise<void>;
   checkLoginStatus: () => Promise<void>;
   switchPortfolio: (portfolioId: string | null) => void;
@@ -47,6 +49,9 @@ interface AppContextType extends AppState {
   addRentIncrease: (increase: Omit<RentIncrease, 'id' | 'createdAt'>) => void;
   updateRentIncrease: (id: string, increase: Partial<RentIncrease>) => void;
   deleteRentIncrease: (id: string) => void;
+  addOperation: (operation: Omit<WorkItem, 'id' | 'createdAt'>) => void;
+  updateOperation: (id: string, updates: Partial<WorkItem>) => void;
+  deleteOperation: (id: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -58,7 +63,8 @@ const defaultState: AppState = {
   documents: [],
   settlements: [],
   calculations: [],
-  rentIncreases: []
+  rentIncreases: [],
+  operations: []
 };
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -135,6 +141,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   useEffect(() => {
     const init = async () => {
+      if (localStorage.getItem('immo-demo-mode') === 'true') {
+        setUser({ id: 'local-demo-user', email: 'demo@immomanager.local', name: 'Demo-Nutzer' });
+        setIsLoading(false);
+        return;
+      }
       try {
         const meRes = await apiFetch('/api/auth/me');
         if (meRes.ok) {
@@ -178,7 +189,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, [activePortfolioId, user]);
 
   useEffect(() => {
-    if (!user) {
+    if (!user || user.id === 'local-demo-user') {
       localStorage.setItem('immo-manager-state', JSON.stringify(state));
     } else {
       // Sync to Drive (debounced or on change)
@@ -276,6 +287,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
+  const startDemo = () => {
+    localStorage.setItem('immo-demo-mode', 'true');
+    setUser({ id: 'local-demo-user', email: 'demo@immomanager.local', name: 'Demo-Nutzer' });
+  };
+
   const checkLoginStatus = async () => {
     setIsLoading(true);
     try {
@@ -305,7 +321,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const logout = async () => {
-    await apiFetch('/api/auth/logout', { method: 'POST' });
+    if (user?.id === 'local-demo-user') localStorage.removeItem('immo-demo-mode');
+    else await apiFetch('/api/auth/logout', { method: 'POST' });
     setUser(null);
     setPortfolios({ owned: [], shared: [] });
     setActivePortfolioId(null);
@@ -491,6 +508,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }));
   };
 
+  const addOperation = (operation: Omit<WorkItem, 'id' | 'createdAt'>) => {
+    setState(prev => ({ ...prev, operations: [...(prev.operations || []), { ...operation, id: generateId(), createdAt: new Date().toISOString() }] }));
+  };
+  const updateOperation = (id: string, updates: Partial<WorkItem>) => {
+    setState(prev => ({ ...prev, operations: (prev.operations || []).map(item => item.id === id ? { ...item, ...updates } : item) }));
+  };
+  const deleteOperation = (id: string) => {
+    setState(prev => ({ ...prev, operations: (prev.operations || []).filter(item => item.id !== id) }));
+  };
+
   return (
     <AppContext.Provider value={{
       ...state,
@@ -499,6 +526,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       activePortfolioId,
       isLoading,
       login,
+      startDemo,
       logout,
       checkLoginStatus,
       switchPortfolio,
@@ -510,13 +538,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       settlements: state.settlements || [],
       calculations: state.calculations || [],
       rentIncreases: state.rentIncreases || [],
+      operations: state.operations || [],
       addProperty, updateProperty, deleteProperty,
       addUnit, updateUnit, deleteUnit,
       addTenant, updateTenant, deleteTenant,
       addDocument, deleteDocument,
       addSettlement, deleteSettlement,
       addCalculation, deleteCalculation,
-      addRentIncrease, updateRentIncrease, deleteRentIncrease
+      addRentIncrease, updateRentIncrease, deleteRentIncrease,
+      addOperation, updateOperation, deleteOperation
     }}>
       {children}
     </AppContext.Provider>
