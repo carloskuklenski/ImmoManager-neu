@@ -13,6 +13,7 @@ import { UtilitySettlements } from './components/UtilitySettlements';
 import { YieldCalculator } from './components/YieldCalculator';
 import { RentIncreases } from './components/RentIncreases';
 import { Portfolio } from './components/Portfolio';
+import { Operations } from './components/Operations';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -27,6 +28,7 @@ export default function App() {
         {activeTab === 'rent-increases' && <RentIncreases />}
         {activeTab === 'calculator' && <YieldCalculator />}
         {activeTab === 'portfolio' && <Portfolio />}
+        {activeTab === 'operations' && <Operations />}
       </Layout>
     </AppProvider>
   );
