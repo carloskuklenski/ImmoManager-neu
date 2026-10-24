@@ -296,7 +296,8 @@ app.get("/api/drive/data", requireAuth, async (req: any, res) => {
       const file = await drive.files.get({ fileId, alt: 'media' });
       res.json(file.data);
     } else {
-      res.json(null);
+      const stored = db.prepare("SELECT data FROM portfolio_data WHERE portfolio_id = ?").get(portfolioId) as { data: string } | undefined;
+      res.json(stored ? JSON.parse(stored.data) : null);
     }
   } catch (error) {
     console.error("Drive Read Error; falling back to SQLite:", error);
