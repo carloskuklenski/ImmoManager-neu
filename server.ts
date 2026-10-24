@@ -54,6 +54,11 @@ db.exec(`
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(user_id) REFERENCES users(id)
   );
+  CREATE TABLE IF NOT EXISTS portfolio_data (
+    portfolio_id TEXT PRIMARY KEY,
+    data TEXT NOT NULL,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
 `);
 
 app.use(express.json());
@@ -274,7 +279,10 @@ app.get("/api/drive/data", requireAuth, async (req: any, res) => {
   }
 
   const drive = await getDriveClient(ownerId);
-  if (!drive) return res.status(500).json({ error: "Owner has not enabled Drive sync" });
+  if (!drive) {
+    const stored = db.prepare("SELECT data FROM portfolio_data WHERE portfolio_id = ?").get(portfolioId) as { data: string } | undefined;
+    return res.json(stored ? JSON.parse(stored.data) : null);
+  }
 
   try {
     const list = await drive.files.list({
@@ -291,8 +299,9 @@ app.get("/api/drive/data", requireAuth, async (req: any, res) => {
       res.json(null);
     }
   } catch (error) {
-    console.error("Drive Read Error:", error);
-    res.status(500).json({ error: "Failed to read from Drive" });
+    console.error("Drive Read Error; falling back to SQLite:", error);
+    const stored = db.prepare("SELECT data FROM portfolio_data WHERE portfolio_id = ?").get(portfolioId) as { data: string } | undefined;
+    res.json(stored ? JSON.parse(stored.data) : null);
   }
 });
 
@@ -310,7 +319,11 @@ app.post("/api/drive/data", requireAuth, async (req: any, res) => {
   }
 
   const drive = await getDriveClient(ownerId);
-  if (!drive) return res.status(500).json({ error: "Owner has not enabled Drive sync" });
+  if (!drive) {
+    db.prepare("INSERT INTO portfolio_data (portfolio_id, data, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP) ON CONFLICT(portfolio_id) DO UPDATE SET data = excluded.data, updated_at = CURRENT_TIMESTAMP")
+      .run(portfolioId, JSON.stringify(req.body));
+    return res.json({ success: true, storage: "sqlite" });
+  }
 
   try {
     const list = await drive.files.list({
@@ -335,8 +348,10 @@ app.post("/api/drive/data", requireAuth, async (req: any, res) => {
     }
     res.json({ success: true });
   } catch (error) {
-    console.error("Drive Write Error:", error);
-    res.status(500).json({ error: "Failed to write to Drive" });
+    console.error("Drive Write Error; falling back to SQLite:", error);
+    db.prepare("INSERT INTO portfolio_data (portfolio_id, data, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP) ON CONFLICT(portfolio_id) DO UPDATE SET data = excluded.data, updated_at = CURRENT_TIMESTAMP")
+      .run(portfolioId, JSON.stringify(req.body));
+    res.json({ success: true, storage: "sqlite" });
   }
 });
 
