@@ -1,11 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Activity, CalendarDays, CheckCircle2, Circle, ClipboardList, Gauge, Plus, Search, Wrench, X } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { Activity, CalendarDays, CheckCircle2, Circle, ClipboardList, Plus, Search, Wrench, X } from 'lucide-react';
+import { useAppContext } from '../context/AppContext';
+import { WorkItem, WorkKind, WorkStatus } from '../types';
 
-type WorkKind = 'Leerstand' | 'Übergabe' | 'Wartung' | 'Zähler' | 'Bewerbung' | 'Aufgabe';
-type WorkStatus = 'Offen' | 'In Bearbeitung' | 'Erledigt';
-type WorkItem = { id: string; title: string; kind: WorkKind; location: string; dueDate: string; status: WorkStatus; notes: string; createdAt: string };
 
-const STORAGE_KEY = 'immo-manager-operations-v1';
+
 const kinds: WorkKind[] = ['Leerstand', 'Übergabe', 'Wartung', 'Zähler', 'Bewerbung', 'Aufgabe'];
 const statuses: WorkStatus[] = ['Offen', 'In Bearbeitung', 'Erledigt'];
 const kindStyles: Record<WorkKind, string> = {
@@ -17,15 +16,8 @@ const kindStyles: Record<WorkKind, string> = {
   Aufgabe: 'bg-slate-100 text-slate-700 ring-slate-200',
 };
 
-function readItems(): WorkItem[] {
-  try {
-    const value = localStorage.getItem(STORAGE_KEY);
-    return value ? JSON.parse(value) as WorkItem[] : [];
-  } catch { return []; }
-}
-
 export const Operations: React.FC = () => {
-  const [items, setItems] = useState<WorkItem[]>(readItems);
+  const { operations: items, addOperation, updateOperation, deleteOperation } = useAppContext();
   const [filter, setFilter] = useState<'Alle' | WorkKind>('Alle');
   const [query, setQuery] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -34,8 +26,6 @@ export const Operations: React.FC = () => {
   const [location, setLocation] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [notes, setNotes] = useState('');
-
-  useEffect(() => { localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); }, [items]);
 
   const visibleItems = useMemo(() => items.filter(item =>
     (filter === 'Alle' || item.kind === filter) &&
@@ -47,12 +37,12 @@ export const Operations: React.FC = () => {
   function submit(event: React.FormEvent) {
     event.preventDefault();
     if (!title.trim()) return;
-    setItems(current => [{ id: crypto.randomUUID(), title: title.trim(), kind, location: location.trim(), dueDate, status: 'Offen', notes: notes.trim(), createdAt: new Date().toISOString() }, ...current]);
+    addOperation({ title: title.trim(), kind, location: location.trim(), dueDate, status: 'Offen', notes: notes.trim() });
     setTitle(''); setKind('Aufgabe'); setLocation(''); setDueDate(''); setNotes(''); setShowForm(false);
   }
 
   function updateStatus(id: string, status: WorkStatus) {
-    setItems(current => current.map(item => item.id === id ? { ...item, status } : item));
+    updateOperation(id, { status });
   }
 
   return <div className="space-y-6">
@@ -94,9 +84,9 @@ export const Operations: React.FC = () => {
       {visibleItems.length === 0 ? <div className="px-6 py-14 text-center"><div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100"><ClipboardList className="h-6 w-6 text-slate-400" /></div><h3 className="mt-4 font-semibold text-slate-900">{items.length === 0 ? 'Noch keine Vorgänge erfasst' : 'Keine passenden Vorgänge gefunden'}</h3><p className="mx-auto mt-1 max-w-md text-sm text-slate-500">{items.length === 0 ? 'Legen Sie den ersten Vorgang an, um Übergaben, Wartungen, Leerstände und Aufgaben nachzuverfolgen.' : 'Ändern Sie den Filter oder den Suchbegriff.'}</p></div> :
         <div className="divide-y divide-slate-100">{visibleItems.map(item => <article key={item.id} className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
           <div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><span className={`rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${kindStyles[item.kind]}`}>{item.kind}</span><span className="text-xs text-slate-400">Erstellt {new Date(item.createdAt).toLocaleDateString('de-DE')}</span></div><h3 className="mt-2 font-semibold text-slate-900">{item.title}</h3>{item.location && <p className="mt-1 text-sm text-slate-600">{item.location}</p>}{item.notes && <p className="mt-1 text-sm text-slate-500">{item.notes}</p>}{item.dueDate && <p className="mt-2 flex items-center gap-1.5 text-xs text-slate-500"><CalendarDays className="h-3.5 w-3.5" />Fällig am {new Date(item.dueDate + 'T12:00:00').toLocaleDateString('de-DE')}</p>}</div>
-          <div className="flex items-center gap-3 sm:min-w-48 sm:justify-end"><select aria-label={`Status für ${item.title}`} value={item.status} onChange={e => updateStatus(item.id, e.target.value as WorkStatus)} className="min-w-40 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-emerald-500">{statuses.map(status => <option key={status}>{status}</option>)}</select><button title="Vorgang löschen" onClick={() => setItems(current => current.filter(candidate => candidate.id !== item.id))} className="rounded-lg p-2 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600"><X className="h-4 w-4" /></button></div>
+          <div className="flex items-center gap-3 sm:min-w-48 sm:justify-end"><select aria-label={`Status für ${item.title}`} value={item.status} onChange={e => updateStatus(item.id, e.target.value as WorkStatus)} className="min-w-40 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-emerald-500">{statuses.map(status => <option key={status}>{status}</option>)}</select><button title="Vorgang löschen" onClick={() => deleteOperation(item.id)} className="rounded-lg p-2 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600"><X className="h-4 w-4" /></button></div>
         </article>)}</div>}
     </div>
-    <p className="text-xs text-slate-400">Hinweis: Vorgänge werden lokal in diesem Browser gespeichert. Für Team-Synchronisierung und produktive Dokumentenprozesse ist eine serverseitige Datenintegration erforderlich.</p>
+    <p className="text-xs text-slate-400">Hinweis: Im Demo-Modus werden Vorgänge lokal gespeichert. Nach Google-Anmeldung nutzt die App die vorhandene Datensynchronisierung des Portfolios.</p>
   </div>;
 };
