@@ -21,7 +21,9 @@ Aus https://nahaus.de/funktionen/ und den dort verlinkten Funktionsseiten: Immob
 - Bestehende Module bleiben erhalten.
 - Neues Modul „Vorgänge & Aufgaben“ ergänzt operative Workflows für Leerstand, Übergaben, Wartung, Zähler, Bewerbungen und allgemeine Aufgaben.
 - Vorgänge sind anlegbar, durchsuchbar, kategorisierbar, nach Status pflegbar und löschbar; responsive UI.
-- Aktuell speichert das Modul Daten in browserlokalem localStorage. Es ist absichtlich nicht als Cloud-Synchronisierung ausgegeben; die Anbindung an AppContext/API ist ein Folgepunkt.
+- Vorgänge sind Teil des zentralen AppContext-Datenmodells und werden mit dem Portfolio gespeichert.
+- Ein lokaler Demo-Modus ist ohne OAuth verfügbar und nutzt Browser-LocalStorage; er lädt Beispielobjekte, wenn noch keine Daten vorhanden sind.
+- Dokumentenablage ergänzt Uploads bis 5 MB oder externe URLs. Dokumentmetadaten und Daten-URLs liegen im zentralen App-Datenmodell.
 
 ## Noch nicht umgesetzt / technische Folgearbeiten
 1. Eigentümer, Bewerber und Zähler als echte typisierte Entitäten mit CRUD und Server-Synchronisierung.
@@ -29,6 +31,7 @@ Aus https://nahaus.de/funktionen/ und den dort verlinkten Funktionsseiten: Immob
 3. Sollstellungen, Zahlungen und Mahnstufen mit Buchungsjournal und revisionsfähiger Historie.
 4. Rollen/Rechte, Validierung, Fehlerzustände und Tests ergänzen.
 5. Browser-/REA-Analyse nach Einrichtung von REA durchführen; Interaktionen, Navigation und zugängliche Oberflächen gegen öffentliche Referenz prüfen.
+6. CI führt TypeScript-Prüfung und Produktions-Build aus; Ergebnis des neuesten Laufs vor Merge kontrollieren.
 
 ## Prüfschritte
 - npm run lint
