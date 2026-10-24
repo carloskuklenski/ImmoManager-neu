@@ -290,6 +290,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const startDemo = () => {
     localStorage.setItem('immo-demo-mode', 'true');
     setUser({ id: 'local-demo-user', email: 'demo@immomanager.local', name: 'Demo-Nutzer' });
+    setState(prev => {
+      if ((prev.properties || []).length || (prev.units || []).length || (prev.tenants || []).length || (prev.operations || []).length) return prev;
+      return {
+        ...prev,
+        properties: [{ id: 'demo-property-1', name: 'Altbau am Park', street: 'Parkstraße 18', zipCode: '65189', city: 'Wiesbaden', purchasePrice: 685000, purchaseDate: '2022-06-01' }],
+        units: [{ id: 'demo-unit-1', propertyId: 'demo-property-1', name: 'Wohnung 1. OG links', sizeSqm: 78, rooms: 3 }],
+        tenants: [{ id: 'demo-tenant-1', unitId: 'demo-unit-1', firstName: 'Anna', lastName: 'Becker', email: 'anna.becker@example.com', phone: '+49 611 555010', rent: 980, utilities: 220, deposit: 2940, leaseStart: '2024-04-01' }],
+        operations: [{ id: 'demo-operation-1', title: 'Heizungswartung terminieren', kind: 'Wartung', location: 'Parkstraße 18 · Wohnung 1. OG links', dueDate: '2026-11-15', status: 'Offen', notes: 'Beispielvorgang – kann angepasst oder gelöscht werden.', createdAt: new Date().toISOString() }]
+      };
+    });
   };
 
   const checkLoginStatus = async () => {
