@@ -61,7 +61,7 @@ db.exec(`
   );
 `);
 
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 
 // Middleware to check token
 const requireAuth = (req: any, res: any, next: any) => {
