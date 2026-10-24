@@ -101,3 +101,16 @@ export interface YieldCalculation {
 }
 
 
+
+export type WorkKind = 'Leerstand' | 'Übergabe' | 'Wartung' | 'Zähler' | 'Bewerbung' | 'Aufgabe';
+export type WorkStatus = 'Offen' | 'In Bearbeitung' | 'Erledigt';
+export interface WorkItem {
+  id: string;
+  title: string;
+  kind: WorkKind;
+  location: string;
+  dueDate: string;
+  status: WorkStatus;
+  notes: string;
+  createdAt: string;
+}

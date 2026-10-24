@@ -4,7 +4,6 @@
  */
 
 import React, { useState } from 'react';
-import { AppProvider } from './context/AppContext';
 import { Layout } from './components/Layout';
 import { Dashboard } from './components/Dashboard';
 import { Properties } from './components/Properties';
@@ -13,13 +12,14 @@ import { UtilitySettlements } from './components/UtilitySettlements';
 import { YieldCalculator } from './components/YieldCalculator';
 import { RentIncreases } from './components/RentIncreases';
 import { Portfolio } from './components/Portfolio';
+import { Operations } from './components/Operations';
+import { Documents } from './components/Documents';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
 
   return (
-    <AppProvider>
-      <Layout activeTab={activeTab} setActiveTab={setActiveTab}>
+    <Layout activeTab={activeTab} setActiveTab={setActiveTab}>
         {activeTab === 'dashboard' && <Dashboard />}
         {activeTab === 'properties' && <Properties />}
         {activeTab === 'tenants' && <Tenants />}
@@ -27,7 +27,8 @@ export default function App() {
         {activeTab === 'rent-increases' && <RentIncreases />}
         {activeTab === 'calculator' && <YieldCalculator />}
         {activeTab === 'portfolio' && <Portfolio />}
-      </Layout>
-    </AppProvider>
+        {activeTab === 'operations' && <Operations />}
+        {activeTab === 'documents' && <Documents />}
+    </Layout>
   );
 }

@@ -6,3 +6,8 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Local SQLite data
+immomanager.db
+immomanager.db-shm
+immomanager.db-wal

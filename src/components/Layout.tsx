@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, Building, Users, Menu, X, PieChart, FileSpreadsheet, Calculator, TrendingUp, Share2, LogIn, LogOut, User as UserIcon } from 'lucide-react';
+import { Home, Building, Users, Menu, X, PieChart, FileSpreadsheet, Calculator, TrendingUp, Share2, LogIn, LogOut, User as UserIcon, ClipboardList, FileText } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 
 interface LayoutProps {
@@ -9,7 +9,7 @@ interface LayoutProps {
 }
 
 export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab }) => {
-  const { user, login, logout, isLoading, checkLoginStatus } = useAppContext();
+  const { user, login, startDemo, logout, isLoading, checkLoginStatus } = useAppContext();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const navItems = [
@@ -20,6 +20,8 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
     { id: 'rent-increases', label: 'Mieterhöhungen', icon: TrendingUp },
     { id: 'calculator', label: 'Renditerechner', icon: Calculator },
     { id: 'portfolio', label: 'Portfolio & Sharing', icon: Share2 },
+    { id: 'operations', label: 'Vorgänge & Aufgaben', icon: ClipboardList },
+    { id: 'documents', label: 'Dokumente', icon: FileText },
   ];
 
   if (isLoading) {
@@ -61,6 +63,13 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
                 <div className="relative flex justify-center text-xs uppercase"><span className="bg-slate-800 px-2 text-slate-500">Probleme?</span></div>
               </div>
 
+              <button
+                onClick={startDemo}
+                className="w-full rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-6 py-3 font-semibold text-emerald-300 transition hover:bg-emerald-500/20"
+              >
+                Ohne Anmeldung ausprobieren
+              </button>
+
               <button 
                 onClick={checkLoginStatus}
                 className="w-full text-slate-400 hover:text-white text-sm font-medium transition-colors"
@@ -75,8 +84,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
               </div>
             </div>
             <p className="mt-6 text-xs text-slate-500 leading-relaxed">
-              Durch die Anmeldung stimmen Sie unseren Nutzungsbedingungen zu. 
-              Ihre Daten werden sicher in Ihrem Google Drive gespeichert.
+              Im Demo-Modus bleiben Ihre Daten lokal in diesem Browser. Für geräteübergreifende Synchronisierung melden Sie sich mit Google an.
             </p>
           </div>
 
